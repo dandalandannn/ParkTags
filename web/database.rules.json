@@ -1,0 +1,76 @@
+{
+  "rules": {
+    "roles": {
+      ".read": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid"
+      }
+    },
+    "students": {
+      ".read": "auth != null && root.child('roles').child(auth.uid).exists()",
+      ".write": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'",
+      "$sid": {
+        "vehicles": {
+          "$vid": {
+            "current_status": {
+              ".write": "auth != null && root.child('roles').child(auth.uid).exists()"
+            }
+          }
+        }
+      }
+    },
+    "access_logs": {
+      ".read": "auth != null && root.child('roles').child(auth.uid).exists()",
+      ".write": "auth != null && root.child('roles').child(auth.uid).exists()"
+    },
+    "settings": {
+      ".read": "auth != null && root.child('roles').child(auth.uid).exists()",
+      ".write": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'",
+      "slot_limits": {
+        "$type": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+        }
+      }
+    },
+    "archived_students": {
+      ".read": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "archived_vehicles": {
+      ".read": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "archived_roles": {
+      ".read": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "student_photos": {
+      ".read": "auth != null && root.child('roles').child(auth.uid).exists()",
+      "$sid": {
+        ".write": "auth != null && root.child('roles').child(auth.uid).child('role').val() === 'admin'",
+        ".validate": "newData.isString() && newData.val().matches(/^data:image\\/jpeg;base64,/) && newData.val().length < 70000"
+      }
+    },
+    "incident_reports": {
+      ".read": "auth != null && root.child('roles').child(auth.uid).exists()",
+      ".indexOn": [
+        "status",
+        "created_at"
+      ],
+      "$id": {
+        ".write": "auth != null && root.child('roles').child(auth.uid).exists() && (newData.exists() || root.child('roles').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "newData.hasChildren(['remarks', 'status', 'created_at'])",
+        "remarks": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500"
+        },
+        "status": {
+          ".validate": "newData.val() === 'open' || newData.val() === 'resolved'"
+        },
+        "created_at": {
+          ".validate": "newData.isNumber()"
+        }
+      }
+    }
+  }
+}
